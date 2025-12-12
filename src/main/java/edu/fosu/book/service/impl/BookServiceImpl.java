@@ -26,7 +26,7 @@ public class BookServiceImpl implements BookService {
     @Override
     public Book insertBook(Book book) {
         int ret = bookMapper.insert(book);
-        if(ret == 0)
+        if(ret > 0)
             return book;
         else
             return null;
@@ -35,7 +35,7 @@ public class BookServiceImpl implements BookService {
     @Override
     public Book updateByPrimaryKey(Book book) {
         int ret = bookMapper.updateByPrimaryKey(book);
-        if(ret == 0)
+        if(ret > 0)
             return book;
         else
             return null;

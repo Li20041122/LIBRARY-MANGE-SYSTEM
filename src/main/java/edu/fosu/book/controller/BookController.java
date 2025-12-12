@@ -1,11 +1,12 @@
 package edu.fosu.book.controller;
 
+import edu.fosu.book.common.BusinessException;
+import edu.fosu.book.common.Result;
+import edu.fosu.book.dao.BookMapper;
+import edu.fosu.book.dto.PageResult;
 import edu.fosu.book.entity.Book;
 import edu.fosu.book.service.BookService;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.autoconfigure.AutoConfiguration;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -17,55 +18,72 @@ public class BookController {
     @Autowired
     private BookService bookService;
 
+    @Autowired
+    private BookMapper bookMapper;
+
     @GetMapping("/{id}")
-    public ResponseEntity<Book> getBookById(@PathVariable String id) {
+    public Result<Book> getBookById(@PathVariable String id) {
         Book book = bookService.selectByPrimaryKey(id);
         if (book != null) {
-            return ResponseEntity.ok(book);
+            return Result.success(book);
         } else {
-            return ResponseEntity.notFound().build();
+            throw new BusinessException(404, "图书不存在");
         }
     }
 
     @GetMapping
-    public ResponseEntity<List<Book>> getAllBooks() {
+    public Result<List<Book>> getAllBooks() {
         List<Book> books = bookService.getAllBooks();
-        if (books != null) {
-            return ResponseEntity.ok(books);
-        } else {
-            return ResponseEntity.notFound().build();
-        }
+        return Result.success(books);
+    }
+
+    @GetMapping("/page")
+    public Result<PageResult<Book>> getBookPage(
+            @RequestParam(defaultValue = "") String keyword,
+            @RequestParam(defaultValue = "1") int page,
+            @RequestParam(defaultValue = "10") int size) {
+        int offset = (page - 1) * size;
+        List<Book> list = bookMapper.selectPage(keyword, offset, size);
+        long total = bookMapper.countAll(keyword);
+        return Result.success(new PageResult<>(list, total, page, size));
     }
 
     @PostMapping
-    public ResponseEntity<Book> insertBook(@RequestBody Book book) {
+    public Result<Book> insertBook(@RequestBody Book book) {
         Book savedBook = bookService.insertBook(book);
-        return ResponseEntity.status(HttpStatus.CREATED).body(savedBook);
+        if (savedBook != null) {
+            return Result.success(savedBook);
+        } else {
+            throw new BusinessException("添加图书失败");
+        }
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<Book> updateBookById(@PathVariable String id, @RequestBody Book book) {
+    public Result<Book> updateBookById(@PathVariable String id, @RequestBody Book book) {
         if (!id.equals(book.getBookid())) {
-            return ResponseEntity.badRequest().build();
+            throw new BusinessException(400, "ID不匹配");
         }
 
         Book existingBook = bookService.selectByPrimaryKey(id);
-        if (existingBook != null) {
-            Book updatedBook = bookService.updateByPrimaryKey(book);
-            return ResponseEntity.ok(updatedBook);
+        if (existingBook == null) {
+            throw new BusinessException(404, "图书不存在");
+        }
+
+        Book updatedBook = bookService.updateByPrimaryKey(book);
+        if (updatedBook != null) {
+            return Result.success(updatedBook);
         } else {
-            return ResponseEntity.notFound().build();
+            throw new BusinessException("更新图书失败");
         }
     }
 
     @DeleteMapping("/{id}")
-    public ResponseEntity<Book> deleteBookById(@PathVariable String id) {
+    public Result<Void> deleteBookById(@PathVariable String id) {
         Book existingBook = bookService.selectByPrimaryKey(id);
-        if (existingBook != null) {
-            bookService.deleteByPrimaryKey(id);
-            return ResponseEntity.noContent().build();
-        } else {
-            return ResponseEntity.notFound().build();
+        if (existingBook == null) {
+            throw new BusinessException(404, "图书不存在");
         }
+        bookService.deleteByPrimaryKey(id);
+        return Result.success();
     }
 }

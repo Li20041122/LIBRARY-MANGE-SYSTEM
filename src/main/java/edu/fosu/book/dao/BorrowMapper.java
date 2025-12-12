@@ -16,4 +16,8 @@ public interface BorrowMapper {
     List<Borrow> selectAll();
 
     int updateByPrimaryKey(Borrow record);
+
+    List<Borrow> selectPage(@Param("keyword") String keyword, @Param("offset") int offset, @Param("size") int size);
+
+    long countAll(@Param("keyword") String keyword);
 }

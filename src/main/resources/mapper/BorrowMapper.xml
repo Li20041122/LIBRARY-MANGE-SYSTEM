@@ -41,4 +41,22 @@
     select UserID, BookID, BorrowTime, ReturnTime, PenalSum, Payment
     from borrow
   </select>
+  <select id="selectPage" resultMap="BaseResultMap">
+    select UserID, BookID, BorrowTime, ReturnTime, PenalSum, Payment
+    from borrow
+    <where>
+      <if test="keyword != null and keyword != ''">
+        (UserID LIKE CONCAT('%', #{keyword}, '%') OR BookID LIKE CONCAT('%', #{keyword}, '%'))
+      </if>
+    </where>
+    LIMIT #{offset}, #{size}
+  </select>
+  <select id="countAll" resultType="long">
+    select count(*) from borrow
+    <where>
+      <if test="keyword != null and keyword != ''">
+        (UserID LIKE CONCAT('%', #{keyword}, '%') OR BookID LIKE CONCAT('%', #{keyword}, '%'))
+      </if>
+    </where>
+  </select>
 </mapper>

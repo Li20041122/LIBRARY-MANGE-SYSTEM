@@ -1,10 +1,12 @@
 package edu.fosu.book.controller;
 
+import edu.fosu.book.common.BusinessException;
+import edu.fosu.book.common.Result;
+import edu.fosu.book.dao.BorrowMapper;
+import edu.fosu.book.dto.PageResult;
 import edu.fosu.book.entity.Borrow;
 import edu.fosu.book.service.BorrowService;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -16,55 +18,72 @@ public class BorrowController {
     @Autowired
     private BorrowService borrowService;
 
+    @Autowired
+    private BorrowMapper borrowMapper;
+
     @GetMapping("/{userid}/{bookid}")
-    public ResponseEntity<Borrow> getBorrowByPrimaryKey(@PathVariable String userid, @PathVariable String bookid) {
+    public Result<Borrow> getBorrowByPrimaryKey(@PathVariable String userid, @PathVariable String bookid) {
         Borrow borrow = borrowService.selectByPrimaryKey(userid, bookid);
         if (borrow != null) {
-            return ResponseEntity.ok(borrow);
+            return Result.success(borrow);
         } else {
-            return ResponseEntity.notFound().build();
+            throw new BusinessException(404, "借阅记录不存在");
         }
     }
 
     @GetMapping
-    public ResponseEntity<List<Borrow>> getAllBorrows() {
+    public Result<List<Borrow>> getAllBorrows() {
         List<Borrow> borrows = borrowService.getAllBorrows();
-        if (borrows != null) {
-            return ResponseEntity.ok(borrows);
-        } else {
-            return ResponseEntity.notFound().build();
-        }
+        return Result.success(borrows);
+    }
+
+    @GetMapping("/page")
+    public Result<PageResult<Borrow>> getBorrowPage(
+            @RequestParam(defaultValue = "") String keyword,
+            @RequestParam(defaultValue = "1") int page,
+            @RequestParam(defaultValue = "10") int size) {
+        int offset = (page - 1) * size;
+        List<Borrow> list = borrowMapper.selectPage(keyword, offset, size);
+        long total = borrowMapper.countAll(keyword);
+        return Result.success(new PageResult<>(list, total, page, size));
     }
 
     @PostMapping
-    public ResponseEntity<Borrow> insertBorrow(@RequestBody Borrow borrow) {
+    public Result<Borrow> insertBorrow(@RequestBody Borrow borrow) {
         Borrow savedBorrow = borrowService.insertBorrow(borrow);
-        return ResponseEntity.status(HttpStatus.CREATED).body(savedBorrow);
+        if (savedBorrow != null) {
+            return Result.success(savedBorrow);
+        } else {
+            throw new BusinessException("添加借阅记录失败");
+        }
     }
 
     @PutMapping("/{userid}/{bookid}")
-    public ResponseEntity<Borrow> updateBorrowByPrimaryKey(@PathVariable String userid, @PathVariable String bookid, @RequestBody Borrow borrow) {
+    public Result<Borrow> updateBorrowByPrimaryKey(@PathVariable String userid, @PathVariable String bookid, @RequestBody Borrow borrow) {
         if (!userid.equals(borrow.getUserid()) || !bookid.equals(borrow.getBookid())) {
-            return ResponseEntity.badRequest().build();
+            throw new BusinessException(400, "ID不匹配");
         }
 
         Borrow existingBorrow = borrowService.selectByPrimaryKey(userid, bookid);
-        if (existingBorrow != null) {
-            Borrow updatedBorrow = borrowService.updateByPrimaryKey(borrow);
-            return ResponseEntity.ok(updatedBorrow);
+        if (existingBorrow == null) {
+            throw new BusinessException(404, "借阅记录不存在");
+        }
+
+        Borrow updatedBorrow = borrowService.updateByPrimaryKey(borrow);
+        if (updatedBorrow != null) {
+            return Result.success(updatedBorrow);
         } else {
-            return ResponseEntity.notFound().build();
+            throw new BusinessException("更新借阅记录失败");
         }
     }
 
     @DeleteMapping("/{userid}/{bookid}")
-    public ResponseEntity<Borrow> deleteBorrowByPrimaryKey(@PathVariable String userid, @PathVariable String bookid) {
+    public Result<Void> deleteBorrowByPrimaryKey(@PathVariable String userid, @PathVariable String bookid) {
         Borrow existingBorrow = borrowService.selectByPrimaryKey(userid, bookid);
-        if (existingBorrow != null) {
-            borrowService.deleteByPrimaryKey(userid, bookid);
-            return ResponseEntity.noContent().build();
-        } else {
-            return ResponseEntity.notFound().build();
+        if (existingBorrow == null) {
+            throw new BusinessException(404, "借阅记录不存在");
         }
+        borrowService.deleteByPrimaryKey(userid, bookid);
+        return Result.success();
     }
 }

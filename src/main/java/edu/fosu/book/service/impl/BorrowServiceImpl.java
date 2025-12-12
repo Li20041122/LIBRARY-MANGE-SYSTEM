@@ -26,7 +26,7 @@ public class BorrowServiceImpl implements BorrowService {
     @Override
     public Borrow insertBorrow(Borrow borrow) {
         int ret = borrowMapper.insert(borrow);
-        if(ret == 0)
+        if(ret > 0)
             return borrow;
         else
             return null;
@@ -35,7 +35,7 @@ public class BorrowServiceImpl implements BorrowService {
     @Override
     public Borrow updateByPrimaryKey(Borrow borrow) {
         int ret = borrowMapper.updateByPrimaryKey(borrow);
-        if(ret == 0)
+        if(ret > 0)
             return borrow;
         else
             return null;

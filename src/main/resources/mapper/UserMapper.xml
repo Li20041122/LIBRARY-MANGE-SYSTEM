@@ -8,16 +8,17 @@
     <result column="Password" jdbcType="VARCHAR" property="password" />
     <result column="PhoneNum" jdbcType="CHAR" property="phonenum" />
     <result column="Sex" jdbcType="CHAR" property="sex" />
+    <result column="Role" jdbcType="VARCHAR" property="role" />
   </resultMap>
   <delete id="deleteByPrimaryKey" parameterType="java.lang.String">
     delete from tuser
     where UserID = #{userid,jdbcType=CHAR}
   </delete>
   <insert id="insert" parameterType="edu.fosu.book.entity.User">
-    insert into tuser (UserID, DepartID, UserName, 
-      Password, PhoneNum, Sex)
-    values (#{userid,jdbcType=CHAR}, #{departid,jdbcType=CHAR}, #{username,jdbcType=VARCHAR}, 
-      #{password,jdbcType=VARCHAR}, #{phonenum,jdbcType=CHAR}, #{sex,jdbcType=CHAR})
+    insert into tuser (UserID, DepartID, UserName,
+      Password, PhoneNum, Sex, Role)
+    values (#{userid,jdbcType=CHAR}, #{departid,jdbcType=CHAR}, #{username,jdbcType=VARCHAR},
+      #{password,jdbcType=VARCHAR}, #{phonenum,jdbcType=CHAR}, #{sex,jdbcType=CHAR}, #{role,jdbcType=VARCHAR})
   </insert>
   <update id="updateByPrimaryKey" parameterType="edu.fosu.book.entity.User">
     update tuser
@@ -25,16 +26,40 @@
       UserName = #{username,jdbcType=VARCHAR},
       Password = #{password,jdbcType=VARCHAR},
       PhoneNum = #{phonenum,jdbcType=CHAR},
-      Sex = #{sex,jdbcType=CHAR}
+      Sex = #{sex,jdbcType=CHAR},
+      Role = #{role,jdbcType=VARCHAR}
     where UserID = #{userid,jdbcType=CHAR}
   </update>
   <select id="selectByPrimaryKey" parameterType="java.lang.String" resultMap="BaseResultMap">
-    select UserID, DepartID, UserName, Password, PhoneNum, Sex
+    select UserID, DepartID, UserName, Password, PhoneNum, Sex, Role
     from tuser
     where UserID = #{userid,jdbcType=CHAR}
   </select>
   <select id="selectAll" resultMap="BaseResultMap">
-    select UserID, DepartID, UserName, Password, PhoneNum, Sex
+    select UserID, DepartID, UserName, Password, PhoneNum, Sex, Role
     from tuser
+  </select>
+  <select id="selectByUsername" parameterType="java.lang.String" resultMap="BaseResultMap">
+    select UserID, DepartID, UserName, Password, PhoneNum, Sex, Role
+    from tuser
+    where UserName = #{username,jdbcType=VARCHAR}
+  </select>
+  <select id="selectPage" resultMap="BaseResultMap">
+    select UserID, DepartID, UserName, Password, PhoneNum, Sex, Role
+    from tuser
+    <where>
+      <if test="keyword != null and keyword != ''">
+        (UserName LIKE CONCAT('%', #{keyword}, '%') OR UserID LIKE CONCAT('%', #{keyword}, '%'))
+      </if>
+    </where>
+    LIMIT #{offset}, #{size}
+  </select>
+  <select id="countAll" resultType="long">
+    select count(*) from tuser
+    <where>
+      <if test="keyword != null and keyword != ''">
+        (UserName LIKE CONCAT('%', #{keyword}, '%') OR UserID LIKE CONCAT('%', #{keyword}, '%'))
+      </if>
+    </where>
   </select>
 </mapper>

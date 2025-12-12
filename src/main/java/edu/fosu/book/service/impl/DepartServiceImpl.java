@@ -26,7 +26,7 @@ public class DepartServiceImpl implements DepartService {
     @Override
     public Depart insertDepart(Depart depart) {
         int ret = departMapper.insert(depart);
-        if(ret == 0)
+        if(ret > 0)
             return depart;
         else
             return null;
@@ -35,7 +35,7 @@ public class DepartServiceImpl implements DepartService {
     @Override
     public Depart updateByPrimaryKey(Depart depart) {
         int ret = departMapper.updateByPrimaryKey(depart);
-        if(ret == 0)
+        if(ret > 0)
             return depart;
         else
             return null;

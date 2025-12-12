@@ -39,4 +39,22 @@
     select BookID, BookName, Authors, Publication, PublicDate, Price
     from book
   </select>
+  <select id="selectPage" resultMap="BaseResultMap">
+    select BookID, BookName, Authors, Publication, PublicDate, Price
+    from book
+    <where>
+      <if test="keyword != null and keyword != ''">
+        (BookName LIKE CONCAT('%', #{keyword}, '%') OR Authors LIKE CONCAT('%', #{keyword}, '%') OR BookID LIKE CONCAT('%', #{keyword}, '%'))
+      </if>
+    </where>
+    LIMIT #{offset}, #{size}
+  </select>
+  <select id="countAll" resultType="long">
+    select count(*) from book
+    <where>
+      <if test="keyword != null and keyword != ''">
+        (BookName LIKE CONCAT('%', #{keyword}, '%') OR Authors LIKE CONCAT('%', #{keyword}, '%') OR BookID LIKE CONCAT('%', #{keyword}, '%'))
+      </if>
+    </where>
+  </select>
 </mapper>

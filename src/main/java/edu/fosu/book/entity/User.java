@@ -13,6 +13,8 @@ public class User {
 
     private String sex;
 
+    private String role;
+
     public String getUserid() {
         return userid;
     }
@@ -59,5 +61,13 @@ public class User {
 
     public void setSex(String sex) {
         this.sex = sex == null ? null : sex.trim();
+    }
+
+    public String getRole() {
+        return role;
+    }
+
+    public void setRole(String role) {
+        this.role = role == null ? null : role.trim();
     }
 }

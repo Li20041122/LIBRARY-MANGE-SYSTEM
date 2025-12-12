@@ -31,4 +31,22 @@
     select DepartID, DepartName, ParentDepartID
     from depart
   </select>
+  <select id="selectPage" resultMap="BaseResultMap">
+    select DepartID, DepartName, ParentDepartID
+    from depart
+    <where>
+      <if test="keyword != null and keyword != ''">
+        (DepartName LIKE CONCAT('%', #{keyword}, '%') OR DepartID LIKE CONCAT('%', #{keyword}, '%'))
+      </if>
+    </where>
+    LIMIT #{offset}, #{size}
+  </select>
+  <select id="countAll" resultType="long">
+    select count(*) from depart
+    <where>
+      <if test="keyword != null and keyword != ''">
+        (DepartName LIKE CONCAT('%', #{keyword}, '%') OR DepartID LIKE CONCAT('%', #{keyword}, '%'))
+      </if>
+    </where>
+  </select>
 </mapper>

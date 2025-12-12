@@ -26,7 +26,7 @@ public class UserServiceImpl implements UserService {
     @Override
     public User insertUser(User user) {
         int ret = userMapper.insert(user);
-        if(ret == 0)
+        if(ret > 0)
             return user;
         else
             return null;
@@ -35,7 +35,7 @@ public class UserServiceImpl implements UserService {
     @Override
     public User updateByPrimaryKey(User user) {
         int ret = userMapper.updateByPrimaryKey(user);
-        if(ret == 0)
+        if(ret > 0)
             return user;
         else
             return null;
